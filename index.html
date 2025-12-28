@@ -5,117 +5,116 @@
   <title>Offline Game Toolkit</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f172a" />
-  <meta name="description" content="Offline Dice, Tambola, Coin Toss & Decision Maker" />
+  <meta name="description" content="Offline Dice, Tambola, Coin Toss, Decision Maker, Scoreboard" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+  <header class="app-header">
+    <h1>Offline Game Toolkit</h1>
+    <p>Dice • Tambola • Coin • Decide • Score</p>
+  </header>
 
-<div class="particles" id="particles"></div>
+  <nav class="app-nav">
+    <button class="nav-btn active" data-section="dice" onclick="showSection('dice')">Dice</button>
+    <button class="nav-btn" data-section="tambola" onclick="showSection('tambola')">Tambola</button>
+    <button class="nav-btn" data-section="coin" onclick="showSection('coin')">Coin</button>
+    <button class="nav-btn" data-section="decision" onclick="showSection('decision')">Decide</button>
+    <button class="nav-btn" data-section="score" onclick="showSection('score')">Score</button>
+  </nav>
 
-<header>
-  <h1 class="glitch" data-text="🎮 Offline Game Toolkit">🎮 Offline Game Toolkit</h1>
-  <p class="fade-in">Dice • Tambola • Coin Toss • Decisions</p>
-</header>
+  <main class="app-main">
 
-<nav>
-  <button onclick="showSection('dice')" class="nav-btn" data-section="dice">
-    <span class="icon">🎲</span>
-    <span class="label">Dice</span>
-  </button>
-  <button onclick="showSection('tambola')" class="nav-btn" data-section="tambola">
-    <span class="icon">🔢</span>
-    <span class="label">Tambola</span>
-  </button>
-  <button onclick="showSection('coin')" class="nav-btn" data-section="coin">
-    <span class="icon">🪙</span>
-    <span class="label">Coin</span>
-  </button>
-  <button onclick="showSection('decision')" class="nav-btn" data-section="decision">
-    <span class="icon">🎯</span>
-    <span class="label">Decide</span>
-  </button>
-</nav>
+    <!-- 🎲 Dice -->
+    <section id="dice" class="section active">
+      <div class="card">
+        <h2>Dice Roller</h2>
 
-<main>
-  <!-- 🎲 Dice Roller -->
-<section id="dice" class="section active">
-  <div class="card">
-    <h2>🎲 Dice Roller</h2>
-    
-    <input type="number" id="diceSides" placeholder="Dice sides (e.g. 6, 20)" value="6" min="2" />
-    <input type="number" id="diceCount" placeholder="Number of dice (default 1)" value="1" min="1" max="10" />
+        <label class="field">
+          <span>Sides</span>
+          <input type="number" id="diceSides" value="6" min="2" placeholder="e.g. 6, 20" />
+        </label>
 
-    <button class="action-btn" onclick="rollDice()">
-      <span>Roll Dice</span>
-      <div class="btn-glow"></div>
-    </button>
+        <label class="field">
+          <span>Number of dice</span>
+          <input type="number" id="diceCount" value="1" min="1" max="10" placeholder="default 1" />
+        </label>
 
-    <!-- Simple dice display area -->
-    <div id="diceDisplay" class="dice-display"></div>
-    
-    <div id="diceResult" class="result">Press to roll</div>
-  </div>
-</section>
+        <button class="action-btn" onclick="rollDice()">Roll</button>
 
-  <!-- 🔢 Tambola -->
-  <section id="tambola" class="section">
-    <div class="card">
-      <h2>🔢 Tambola Number Picker</h2>
-      <div class="tambola-display" id="tambolaNumber">
-        <span class="number-large">--</span>
+        <div id="diceDisplay" class="dice-display" aria-label="Dice visuals"></div>
+        <div id="diceResult" class="result">Press Roll</div>
       </div>
-      <button class="action-btn" onclick="pickTambola()">
-        <span>Pick Number</span>
-        <div class="btn-glow"></div>
-      </button>
-      <button class="action-btn secondary" onclick="resetTambola()">
-        <span>Reset Game</span>
-      </button>
-      <div id="tambolaHistory"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- 🪙 Coin Toss -->
-  <section id="coin" class="section">
-    <div class="card">
-      <h2>🪙 Head or Tails</h2>
-      <div class="coin-container">
-        <div class="coin" id="coin3d">
-          <div class="coin-face heads">
-            <div class="coin-inner">H</div>
-          </div>
-          <div class="coin-face tails">
-            <div class="coin-inner">T</div>
+    <!-- 🔢 Tambola -->
+    <section id="tambola" class="section">
+      <div class="card">
+        <h2>Tambola Picker</h2>
+
+        <div id="tambolaNumber" class="result big">---</div>
+
+        <div class="row">
+          <button class="action-btn" onclick="pickTambola()">Pick</button>
+          <button class="action-btn secondary" onclick="resetTambola()">Reset</button>
+        </div>
+
+        <div id="tambolaHistory" class="chips"></div>
+      </div>
+    </section>
+
+    <!-- 🪙 Coin -->
+    <section id="coin" class="section">
+      <div class="card">
+        <h2>Coin Toss</h2>
+
+        <div class="coin-wrap">
+          <div id="coin3d" class="coin" aria-label="Coin animation">
+            <div class="coin-face coin-heads">H</div>
+            <div class="coin-face coin-tails">T</div>
           </div>
         </div>
+
+        <button class="action-btn" onclick="coinToss()">Flip</button>
+        <div id="coinResult" class="result">Press Flip</div>
       </div>
-      <button class="action-btn" onclick="coinToss()">
-        <span>Flip Coin</span>
-        <div class="btn-glow"></div>
-      </button>
-      <div id="coinResult" class="result">Press to flip</div>
-    </div>
-  </section>
+    </section>
 
-  <!-- 🎯 Decision Maker -->
-  <section id="decision" class="section">
-    <div class="card">
-      <h2>🎯 Decision Maker</h2>
-      <div class="roulette-container" id="rouletteWheel"></div>
-      <textarea id="options" placeholder="Enter options separated by commas&#10;e.g., Pizza, Burger, Pasta"></textarea>
-      <button class="action-btn" onclick="makeDecision()">
-        <span>Decide For Me</span>
-        <div class="btn-glow"></div>
-      </button>
-      <div id="decisionResult" class="result">Enter options above</div>
-    </div>
-  </section>
-</main>
+    <!-- 🎯 Decision -->
+    <section id="decision" class="section">
+      <div class="card">
+        <h2>Decision Maker</h2>
 
-<footer>
-  <p>⚡ Works Offline • No Login • No Internet Required</p>
-</footer>
+        <label class="field">
+          <span>Options (comma-separated)</span>
+          <textarea id="options" placeholder="Pizza, Burger, Dosa"></textarea>
+        </label>
 
-<script src="script.js"></script>
+        <button class="action-btn" onclick="makeDecision()">Decide</button>
+        <div id="decisionResult" class="result">Enter options</div>
+      </div>
+    </section>
+
+    <!-- 🃏 Score -->
+    <section id="score" class="section">
+      <div class="card">
+        <h2>Scoreboard</h2>
+
+        <div class="row">
+          <input id="playerName" type="text" placeholder="Player name" />
+          <button class="action-btn" onclick="addPlayer()">Add</button>
+        </div>
+
+        <div id="players" class="players"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    Works Offline • No Login • No Internet Required
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
