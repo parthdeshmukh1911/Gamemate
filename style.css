@@ -1,0 +1,74 @@
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f4f6fb;
+}
+
+header {
+  background: #1e40af;
+  color: white;
+  padding: 16px;
+  text-align: center;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  background: #e5e7eb;
+}
+
+nav button {
+  margin: 6px;
+  padding: 10px 14px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+nav button:hover {
+  background: #1d4ed8;
+}
+
+main {
+  padding: 20px;
+}
+
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+}
+
+button {
+  padding: 10px;
+  margin-top: 6px;
+}
+
+#tambolaHistory span {
+  display: inline-block;
+  padding: 6px;
+  margin: 3px;
+  background: #dbeafe;
+  border-radius: 4px;
+}
+
+footer {
+  text-align: center;
+  padding: 10px;
+  background: #e5e7eb;
+}
