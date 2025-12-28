@@ -38,28 +38,24 @@
 
 <main>
   <!-- 🎲 Dice Roller -->
-  <section id="dice" class="section active">
-    <div class="card">
-      <h2>🎲 Dice Roller</h2>
-      <div class="dice-container">
-        <div class="dice" id="dice3d">
-          <div class="face front">⚀</div>
-          <div class="face back">⚁</div>
-          <div class="face right">⚂</div>
-          <div class="face left">⚃</div>
-          <div class="face top">⚄</div>
-          <div class="face bottom">⚅</div>
-        </div>
-      </div>
-      <input type="number" id="diceSides" placeholder="Dice sides (e.g. 6, 20)" value="6" />
-      <input type="number" id="diceCount" placeholder="Number of dice (default 1)" value="1" />
-      <button class="action-btn" onclick="rollDice()">
-        <span>Roll Dice</span>
-        <div class="btn-glow"></div>
-      </button>
-      <div id="diceResult" class="result">Press to roll</div>
-    </div>
-  </section>
+<section id="dice" class="section active">
+  <div class="card">
+    <h2>🎲 Dice Roller</h2>
+    
+    <input type="number" id="diceSides" placeholder="Dice sides (e.g. 6, 20)" value="6" min="2" />
+    <input type="number" id="diceCount" placeholder="Number of dice (default 1)" value="1" min="1" max="10" />
+
+    <button class="action-btn" onclick="rollDice()">
+      <span>Roll Dice</span>
+      <div class="btn-glow"></div>
+    </button>
+
+    <!-- Simple dice display area -->
+    <div id="diceDisplay" class="dice-display"></div>
+    
+    <div id="diceResult" class="result">Press to roll</div>
+  </div>
+</section>
 
   <!-- 🔢 Tambola -->
   <section id="tambola" class="section">
