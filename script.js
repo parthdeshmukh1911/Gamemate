@@ -1,116 +1,263 @@
-// Global state
+/* ========= State ========= */
 let tambolaNumbers = Array.from({ length: 90 }, (_, i) => i + 1);
 let players = {};
 
-// Initialize on load
-window.addEventListener('DOMContentLoaded', () => {
-  createParticles();
-  setActiveNav();
-});
-
-// Create floating particles background
-function createParticles() {
-  const container = document.getElementById('particles');
-  if (!container) return;
-  
-  for (let i = 0; i < 30; i++) {
-    const particle = document.createElement('div');
-    particle.className = 'particle';
-    particle.style.left = Math.random() * 100 + '%';
-    particle.style.top = Math.random() * 100 + '%';
-    particle.style.animationDelay = Math.random() * 20 + 's';
-    particle.style.animationDuration = (15 + Math.random() * 10) + 's';
-    container.appendChild(particle);
-  }
+/* ========= Helpers ========= */
+function vibrate(pattern = 40) {
+  if ("vibrate" in navigator) navigator.vibrate(pattern);
 }
 
-// Vibration feedback (works on mobile)
-function vibrate(duration = 50) {
-  if ('vibrate' in navigator) {
-    navigator.vibrate(duration);
-  }
+function pop(el) {
+  el.classList.remove("pop");
+  // restart animation
+  void el.offsetWidth;
+  el.classList.add("pop");
 }
 
-// Show section with smooth transition
-function showSection(id) {
-  document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  setActiveNav();
-  vibrate(30);
-}
-
-// Highlight active navigation button
-function setActiveNav() {
-  const activeSection = document.querySelector('.section.active');
-  const sectionId = activeSection?.id;
-  
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    if (btn.getAttribute('data-section') === sectionId) {
-      btn.style.background = 'linear-gradient(135deg, var(--primary), var(--secondary))';
-      btn.style.color = '#020617';
-    } else {
-      btn.style.background = 'var(--glass)';
-      btn.style.color = 'var(--text)';
-    }
+function setActiveNav(sectionId) {
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.section === sectionId);
   });
 }
 
+/* ========= Navigation ========= */
+function showSection(id) {
+  document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
+  const active = document.getElementById(id);
+  if (active) active.classList.add("active");
+  setActiveNav(id);
+  vibrate(20);
+}
 
-
-// 🔢 TAMBOLA with number cycling animation
-function pickTambola() {
-  const display = document.querySelector('.number-large') || document.getElementById('tambolaNumber');
-  const history = document.getElementById('tambolaHistory');
- // 🎲 DICE ROLLER - Fixed and Simplified
+/* ========= Dice (FIXED) ========= */
 function rollDice() {
-  const display = document.getElementById('diceDisplay');
-  const result = document.getElementById('diceResult');
-  const sides = Number(document.getElementById('diceSides').value) || 6;
-  const count = Number(document.getElementById('diceCount').value) || 1;
-  
-  // Validation
-  if (!sides || sides < 2) {
-    showError(result, "⚠️ Enter valid dice sides (min: 2)");
-    vibrate(200);
+  const sides = Number(document.getElementById("diceSides").value) || 6;
+  const count = Number(document.getElementById("diceCount").value) || 1;
+  const diceDisplay = document.getElementById("diceDisplay");
+  const diceResult = document.getElementById("diceResult");
+
+  if (sides < 2) {
+    diceResult.textContent = "Enter valid sides (min 2)";
     return;
   }
-  
   if (count < 1 || count > 10) {
-    showError(result, "⚠️ Number of dice: 1-10");
-    vibrate(200);
+    diceResult.textContent = "Dice count must be 1 to 10";
     return;
   }
-  
-  vibrate(100);
-  
-  // Clear display and show rolling animation
-  display.innerHTML = '';
-  result.textContent = '🎲 Rolling...';
-  
-  // Create dice elements
-  const diceElements = [];
+
+  vibrate(60);
+  diceResult.textContent = "Rolling...";
+  pop(diceResult);
+
+  // Create N dice placeholders (simple UI)
+  diceDisplay.innerHTML = "";
+  const diceEls = [];
   for (let i = 0; i < count; i++) {
-    const dice = document.createElement('div');
-    dice.className = 'simple-dice rolling';
-    
-    if (sides === 6) {
-      // Show dots for standard dice
-      dice.innerHTML = '<div class="dice-dots"></div>';
-    } else {
-      // Show number for non-standard dice
-      dice.innerHTML = '<div class="dice-number">?</div>';
-    }
-    
-    display.appendChild(dice);
-    diceElements.push(dice);
+    const d = document.createElement("div");
+    d.className = "simple-dice rolling";
+    // temporary content while shaking
+    d.innerHTML = sides === 6 ? `<div class="dice-dots"></div>` : `<div class="dice-number">?</div>`;
+    diceDisplay.appendChild(d);
+    diceEls.push(d);
   }
-  
-  // Roll after animation
+
+  // After shake animation: roll and render matching face per die
   setTimeout(() => {
     const results = [];
-    
     for (let i = 0; i < count; i++) {
-      const roll = Math.floor(Math.random() * sides) + 1;
+      const value = Math.floor(Math.random() * sides) + 1;
+      results.push(value);
+
+      const d = diceEls[i];
+      d.classList.remove("rolling");
+
+      // IMPORTANT: UI is set from the same 'value' used in results => always matches
+      if (sides === 6) {
+        d.innerHTML = createDiceFace(value);
+      } else {
+        d.innerHTML = `<div class="dice-number">${value}</div>`;
+      }
+    }
+
+    const total = results.reduce((a, b) => a + b, 0);
+    if (count === 1) {
+      diceResult.innerHTML = `Result: <strong>${results[0]}</strong>`;
+    } else if (count <= 5) {
+      diceResult.innerHTML = `Result: <strong>${results.join(" + ")} = ${total}</strong>`;
+    } else {
+      diceResult.innerHTML = `Total: <strong>${total}</strong> (${results.join(", ")})`;
+    }
+
+    pop(diceResult);
+    vibrate([30, 50, 30]);
+  }, 560);
+}
+
+function createDiceFace(number) {
+  const dotsCount = Math.min(Math.max(number, 1), 6);
+  let dots = "";
+  for (let i = 0; i < dotsCount; i++) dots += `<div class="dot"></div>`;
+  return `<div class="dice-dots dice-face-${dotsCount}">${dots}</div>`;
+}
+
+/* ========= Tambola ========= */
+function pickTambola() {
+  const tambolaNumber = document.getElementById("tambolaNumber");
+  const tambolaHistory = document.getElementById("tambolaHistory");
+
+  if (tambolaNumbers.length === 0) {
+    tambolaNumber.textContent = "Done!";
+    pop(tambolaNumber);
+    vibrate([80, 50, 80]);
+    return;
+  }
+
+  const index = Math.floor(Math.random() * tambolaNumbers.length);
+  const num = tambolaNumbers.splice(index, 1)[0];
+
+  tambolaNumber.textContent = num;
+  pop(tambolaNumber);
+
+  const chip = document.createElement("span");
+  chip.textContent = num;
+  tambolaHistory.appendChild(chip);
+
+  vibrate(50);
+}
+
+function resetTambola() {
+  tambolaNumbers = Array.from({ length: 90 }, (_, i) => i + 1);
+  document.getElementById("tambolaNumber").textContent = "---";
+  document.getElementById("tambolaHistory").innerHTML = "";
+  vibrate(30);
+}
+
+/* ========= Coin ========= */
+function coinToss() {
+  const coin = document.getElementById("coin3d");
+  const coinResult = document.getElementById("coinResult");
+
+  const isHeads = Math.random() < 0.5;
+  coinResult.textContent = "Flipping...";
+  pop(coinResult);
+  vibrate(60);
+
+  coin.classList.remove("flipping");
+  void coin.offsetWidth;
+  coin.classList.add("flipping");
+
+  setTimeout(() => {
+    coinResult.textContent = isHeads ? "HEADS" : "TAILS";
+    pop(coinResult);
+    vibrate([30, 70, 30]);
+  }, 950);
+}
+
+/* ========= Decision Maker ========= */
+function makeDecision() {
+  const optionsEl = document.getElementById("options");
+  const decisionResult = document.getElementById("decisionResult");
+
+  const opts = optionsEl.value
+    .split(",")
+    .map(o => o.trim())
+    .filter(Boolean);
+
+  if (!opts.length) {
+    decisionResult.textContent = "Enter options separated by commas";
+    pop(decisionResult);
+    vibrate(100);
+    return;
+  }
+
+  const pick = opts[Math.floor(Math.random() * opts.length)];
+  decisionResult.textContent = pick;
+  pop(decisionResult);
+  vibrate(40);
+}
+
+/* ========= Scoreboard ========= */
+function addPlayer() {
+  const input = document.getElementById("playerName");
+  const name = input.value.trim();
+  if (!name) return;
+
+  if (players[name] == null) players[name] = 0;
+  input.value = "";
+  renderPlayers();
+  vibrate(30);
+}
+
+function updateScore(name, delta) {
+  players[name] = (players[name] || 0) + delta;
+  renderPlayers();
+  vibrate(20);
+}
+
+function removePlayer(name) {
+  delete players[name];
+  renderPlayers();
+  vibrate(40);
+}
+
+function renderPlayers() {
+  const playersDiv = document.getElementById("players");
+  playersDiv.innerHTML = "";
+
+  const names = Object.keys(players);
+  if (names.length === 0) {
+    const empty = document.createElement("div");
+    empty.style.color = "var(--muted)";
+    empty.style.padding = "10px 2px";
+    empty.textContent = "No players yet. Add a player name above.";
+    playersDiv.appendChild(empty);
+    return;
+  }
+
+  names.forEach(name => {
+    const row = document.createElement("div");
+    row.className = "player-row";
+
+    row.innerHTML = `
+      <div>
+        <div class="player-name">${escapeHtml(name)}</div>
+        <div class="player-score">${players[name]}</div>
+      </div>
+      <div class="score-actions">
+        <button class="small-btn" onclick="updateScore('${escapeAttr(name)}', 10)">+10</button>
+        <button class="small-btn danger" onclick="updateScore('${escapeAttr(name)}', -10)">-10</button>
+        <button class="small-btn" onclick="removePlayer('${escapeAttr(name)}')">Del</button>
+      </div>
+    `;
+
+    playersDiv.appendChild(row);
+  });
+}
+
+/* ========= Safety (simple escaping) ========= */
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+// for inline onclick attributes
+function escapeAttr(str) {
+  return String(str).replaceAll("\\", "\\\\").replaceAll("'", "\\'");
+}
+
+/* ========= Init ========= */
+window.addEventListener("DOMContentLoaded", () => {
+  setActiveNav("dice");
+  renderPlayers();
+
+  // First render: show one dice placeholder
+  const diceDisplay = document.getElementById("diceDisplay");
+  diceDisplay.innerHTML = `<div class="simple-dice">${createDiceFace(1)}</div>`;
+});      const roll = Math.floor(Math.random() * sides) + 1;
       results.push(roll);
       
       const dice = diceElements[i];
