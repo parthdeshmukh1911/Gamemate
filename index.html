@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Offline Game Toolkit</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="theme-color" content="#1e40af" />
   <meta name="description" content="Offline Dice, Tambola, Coin Toss, Decision Maker, Scoreboard" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -98,7 +98,25 @@
     <!-- 🃏 Score -->
     <section id="score" class="section">
       <div class="card">
-        <h2>🃏 Scoreboard</h2>
+        <h2>🃏 Game Scoreboard</h2>
+
+        <label class="field">
+          <span>Select Game</span>
+          <select id="gameSelect" onchange="changeGame()">
+            <option value="rummy">Rummy (Indian Paplu)</option>
+            <option value="teenpatti">Teen Patti (3 Patti)</option>
+            <option value="andarbahar">Andar Bahar</option>
+            <option value="poker">Poker</option>
+            <option value="sattepesatta">Satte Pe Satta</option>
+            <option value="bluff">Bluff (Challenge)</option>
+            <option value="mendikot">Mendikot (Mindi)</option>
+            <option value="teendopaanch">Teen Do Paanch (3-2-5)</option>
+            <option value="carrom">Carrom</option>
+            <option value="ludo">Ludo</option>
+          </select>
+        </label>
+
+        <div id="gameInfo" class="game-info"></div>
 
         <div class="row">
           <input id="playerName" type="text" placeholder="Player name" />
@@ -106,6 +124,8 @@
         </div>
 
         <div id="players" class="players"></div>
+
+        <button class="action-btn secondary" onclick="resetGame()" style="margin-top: 10px;">Reset Game</button>
       </div>
     </section>
 
