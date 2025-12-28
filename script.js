@@ -1,6 +1,103 @@
 /* ==================== STATE ==================== */
 var tambolaNumbers = Array.from({ length: 90 }, function(_, i) { return i + 1; });
 var players = {};
+var currentGame = 'rummy';
+
+/* ==================== GAME CONFIGURATIONS ==================== */
+var gameConfigs = {
+  rummy: {
+    name: 'Rummy (Indian Paplu)',
+    desc: '13-card game. Pure sequence required.',
+    scores: [
+      { label: 'Win', value: 80 },
+      { label: 'Lose', value: -20 },
+      { label: 'Full Count', value: -80 }
+    ]
+  },
+  teenpatti: {
+    name: 'Teen Patti (3 Patti)',
+    desc: '3-card poker. Betting game.',
+    scores: [
+      { label: 'Win Pot', value: 100 },
+      { label: 'Side Show Win', value: 50 },
+      { label: 'Fold', value: -10 }
+    ]
+  },
+  andarbahar: {
+    name: 'Andar Bahar',
+    desc: 'Luck-based betting game.',
+    scores: [
+      { label: 'Win', value: 50 },
+      { label: 'Lose', value: -50 }
+    ]
+  },
+  poker: {
+    name: 'Poker (Texas Hold\'em)',
+    desc: 'Community cards. Best 5-card hand wins.',
+    scores: [
+      { label: 'Win Hand', value: 100 },
+      { label: 'Small Blind', value: -5 },
+      { label: 'Big Blind', value: -10 },
+      { label: 'Fold', value: 0 }
+    ]
+  },
+  sattepesatta: {
+    name: 'Satte Pe Satta (7 on 7)',
+    desc: 'Sequence building from 7 of hearts.',
+    scores: [
+      { label: 'Win (1st)', value: 50 },
+      { label: '2nd Place', value: 20 },
+      { label: 'Last Place', value: -30 }
+    ]
+  },
+  bluff: {
+    name: 'Bluff (Challenge)',
+    desc: 'Lie about your cards. Get caught or win.',
+    scores: [
+      { label: 'Win', value: 60 },
+      { label: 'Caught Bluffing', value: -20 },
+      { label: 'Wrong Challenge', value: -10 }
+    ]
+  },
+  mendikot: {
+    name: 'Mendikot (Mindi)',
+    desc: 'Collect tens. Trick-taking game.',
+    scores: [
+      { label: 'Per Ten', value: 10 },
+      { label: 'Last Trick', value: 5 },
+      { label: 'No Tens', value: -15 }
+    ]
+  },
+  teendopaanch: {
+    name: 'Teen Do Paanch (3-2-5)',
+    desc: '3 players. Make exact hands.',
+    scores: [
+      { label: 'Extra Hand', value: 10 },
+      { label: 'Short Hand', value: -10 },
+      { label: 'Exact', value: 0 }
+    ]
+  },
+  carrom: {
+    name: 'Carrom',
+    desc: 'Pocket pieces. Queen bonus.',
+    scores: [
+      { label: 'White Piece', value: 1 },
+      { label: 'Black Piece', value: 2 },
+      { label: 'Queen Cover', value: 5 },
+      { label: 'Foul', value: -1 }
+    ]
+  },
+  ludo: {
+    name: 'Ludo',
+    desc: 'Race all tokens home.',
+    scores: [
+      { label: 'Win (1st)', value: 100 },
+      { label: '2nd Place', value: 50 },
+      { label: '3rd Place', value: 20 },
+      { label: 'Last', value: 0 }
+    ]
+  }
+};
 
 /* ==================== HELPERS ==================== */
 function vibrate(pattern) {
@@ -28,6 +125,12 @@ function setActiveNav(sectionId) {
   });
 }
 
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 /* ==================== NAVIGATION ==================== */
 function showSection(id) {
   var sections = document.querySelectorAll(".section");
@@ -44,7 +147,7 @@ function showSection(id) {
   vibrate(20);
 }
 
-/* ==================== DICE ==================== */
+/* ==================== DICE ROLLER ==================== */
 function rollDice() {
   var sidesInput = document.getElementById("diceSides");
   var countInput = document.getElementById("diceCount");
@@ -123,17 +226,19 @@ function createDiceFace(number) {
   return '<div class="dice-dots dice-face-' + dotsCount + '">' + dots + '</div>';
 }
 
-/* ==================== TAMBOLA ==================== */
+/* ==================== TAMBOLA NUMBER PICKER ==================== */
 function pickTambola() {
   var tambolaNumber = document.getElementById("tambolaNumber");
   var tambolaHistory = document.getElementById("tambolaHistory");
 
   if (tambolaNumbers.length === 0) {
-    tambolaNumber.textContent = "🎉 Done!";
+    tambolaNumber.textContent = "🎉 Complete!";
     pop(tambolaNumber);
     vibrate([80, 50, 80]);
     return;
   }
+
+  vibrate(50);
 
   var index = Math.floor(Math.random() * tambolaNumbers.length);
   var num = tambolaNumbers.splice(index, 1)[0];
@@ -144,8 +249,6 @@ function pickTambola() {
   var chip = document.createElement("span");
   chip.textContent = num;
   tambolaHistory.appendChild(chip);
-
-  vibrate(50);
 }
 
 function resetTambola() {
@@ -155,7 +258,7 @@ function resetTambola() {
   vibrate(30);
 }
 
-/* ==================== COIN ==================== */
+/* ==================== COIN TOSS ==================== */
 function coinToss() {
   var coin = document.getElementById("coin3d");
   var coinResult = document.getElementById("coinResult");
@@ -170,7 +273,7 @@ function coinToss() {
   void coin.offsetWidth;
   coin.classList.add("flipping");
 
-  var finalRotation = isHeads ? 1440 : 1620; // 1440 = heads (0deg), 1620 = tails (180deg)
+  var finalRotation = isHeads ? 1440 : 1620;
   
   setTimeout(function() {
     coin.style.transform = "rotateY(" + finalRotation + "deg)";
@@ -204,13 +307,30 @@ function makeDecision() {
     return;
   }
 
+  vibrate(40);
+
   var pick = opts[Math.floor(Math.random() * opts.length)];
   decisionResult.innerHTML = "<strong>🎯 " + escapeHtml(pick) + "</strong>";
   pop(decisionResult);
   vibrate([40, 60, 40]);
 }
 
-/* ==================== SCOREBOARD ==================== */
+/* ==================== GAME SCOREBOARD ==================== */
+function changeGame() {
+  var select = document.getElementById("gameSelect");
+  currentGame = select.value;
+  
+  var config = gameConfigs[currentGame];
+  var infoDiv = document.getElementById("gameInfo");
+  
+  if (infoDiv && config) {
+    infoDiv.innerHTML = "<strong>" + config.name + "</strong> " + config.desc;
+  }
+  
+  renderPlayers();
+  vibrate(30);
+}
+
 function addPlayer() {
   var input = document.getElementById("playerName");
   var name = input.value.trim();
@@ -222,6 +342,9 @@ function addPlayer() {
 
   if (players[name] === undefined) {
     players[name] = 0;
+  } else {
+    vibrate(100);
+    return;
   }
   
   input.value = "";
@@ -243,6 +366,19 @@ function removePlayer(name) {
   vibrate(40);
 }
 
+function resetGame() {
+  if (Object.keys(players).length === 0) {
+    vibrate(100);
+    return;
+  }
+  
+  if (confirm("Reset all player scores for this game?")) {
+    players = {};
+    renderPlayers();
+    vibrate(50);
+  }
+}
+
 function renderPlayers() {
   var playersDiv = document.getElementById("players");
   if (!playersDiv) return;
@@ -254,12 +390,16 @@ function renderPlayers() {
   if (names.length === 0) {
     var empty = document.createElement("div");
     empty.style.color = "var(--muted)";
-    empty.style.padding = "10px 2px";
+    empty.style.padding = "16px 12px";
     empty.style.textAlign = "center";
-    empty.textContent = "No players yet. Add a name above.";
+    empty.style.fontSize = "0.9rem";
+    empty.textContent = "No players yet. Add players above to start scoring.";
     playersDiv.appendChild(empty);
     return;
   }
+
+  var config = gameConfigs[currentGame];
+  if (!config) return;
 
   names.forEach(function(name) {
     var row = document.createElement("div");
@@ -281,23 +421,47 @@ function renderPlayers() {
     var actionsDiv = document.createElement("div");
     actionsDiv.className = "score-actions";
 
-    var btn10 = document.createElement("button");
-    btn10.className = "small-btn";
-    btn10.textContent = "+10";
-    btn10.onclick = function() { updateScore(name, 10); };
-
-    var btnMinus = document.createElement("button");
-    btnMinus.className = "small-btn danger";
-    btnMinus.textContent = "-10";
-    btnMinus.onclick = function() { updateScore(name, -10); };
+    config.scores.forEach(function(scoreOption) {
+      var btn = document.createElement("button");
+      btn.className = "small-btn";
+      
+      if (scoreOption.value > 0) {
+        btn.classList.add("positive");
+      } else if (scoreOption.value < 0) {
+        btn.classList.add("negative");
+      }
+      
+      var displayLabel = scoreOption.label;
+      if (scoreOption.value > 0) {
+        displayLabel = "+" + scoreOption.value;
+      } else if (scoreOption.value < 0) {
+        displayLabel = scoreOption.value;
+      } else {
+        displayLabel = scoreOption.label;
+      }
+      
+      btn.textContent = displayLabel;
+      btn.title = scoreOption.label;
+      btn.onclick = (function(n, val) {
+        return function() {
+          updateScore(n, val);
+        };
+      })(name, scoreOption.value);
+      
+      actionsDiv.appendChild(btn);
+    });
 
     var btnDel = document.createElement("button");
     btnDel.className = "small-btn";
-    btnDel.textContent = "Del";
-    btnDel.onclick = function() { removePlayer(name); };
-
-    actionsDiv.appendChild(btn10);
-    actionsDiv.appendChild(btnMinus);
+    btnDel.textContent = "×";
+    btnDel.title = "Remove player";
+    btnDel.style.fontSize = "1.2rem";
+    btnDel.onclick = (function(n) {
+      return function() {
+        removePlayer(n);
+      };
+    })(name);
+    
     actionsDiv.appendChild(btnDel);
 
     row.appendChild(leftDiv);
@@ -307,20 +471,19 @@ function renderPlayers() {
   });
 }
 
-/* ==================== UTILITY ==================== */
-function escapeHtml(str) {
-  var div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-/* ==================== INIT ==================== */
+/* ==================== INITIALIZATION ==================== */
 window.addEventListener("DOMContentLoaded", function() {
   setActiveNav("dice");
-  renderPlayers();
   
   var diceDisplay = document.getElementById("diceDisplay");
   if (diceDisplay) {
     diceDisplay.innerHTML = '<div class="simple-dice">' + createDiceFace(1) + '</div>';
   }
+  
+  var gameSelect = document.getElementById("gameSelect");
+  if (gameSelect) {
+    changeGame();
+  }
+  
+  renderPlayers();
 });
