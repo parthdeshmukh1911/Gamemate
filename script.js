@@ -1,103 +1,37 @@
 /* ==================== STATE ==================== */
 var tambolaNumbers = Array.from({ length: 90 }, function(_, i) { return i + 1; });
-var players = {};
-var currentGame = 'rummy';
 
-/* ==================== GAME CONFIGURATIONS ==================== */
-var gameConfigs = {
-  rummy: {
-    name: 'Rummy (Indian Paplu)',
-    desc: '13-card game. Pure sequence required.',
-    scores: [
-      { label: 'Win', value: 80 },
-      { label: 'Lose', value: -20 },
-      { label: 'Full Count', value: -80 }
-    ]
-  },
-  teenpatti: {
-    name: 'Teen Patti (3 Patti)',
-    desc: '3-card poker. Betting game.',
-    scores: [
-      { label: 'Win Pot', value: 100 },
-      { label: 'Side Show Win', value: 50 },
-      { label: 'Fold', value: -10 }
-    ]
-  },
-  andarbahar: {
-    name: 'Andar Bahar',
-    desc: 'Luck-based betting game.',
-    scores: [
-      { label: 'Win', value: 50 },
-      { label: 'Lose', value: -50 }
-    ]
-  },
-  poker: {
-    name: 'Poker (Texas Hold\'em)',
-    desc: 'Community cards. Best 5-card hand wins.',
-    scores: [
-      { label: 'Win Hand', value: 100 },
-      { label: 'Small Blind', value: -5 },
-      { label: 'Big Blind', value: -10 },
-      { label: 'Fold', value: 0 }
-    ]
-  },
-  sattepesatta: {
-    name: 'Satte Pe Satta (7 on 7)',
-    desc: 'Sequence building from 7 of hearts.',
-    scores: [
-      { label: 'Win (1st)', value: 50 },
-      { label: '2nd Place', value: 20 },
-      { label: 'Last Place', value: -30 }
-    ]
-  },
-  bluff: {
-    name: 'Bluff (Challenge)',
-    desc: 'Lie about your cards. Get caught or win.',
-    scores: [
-      { label: 'Win', value: 60 },
-      { label: 'Caught Bluffing', value: -20 },
-      { label: 'Wrong Challenge', value: -10 }
-    ]
-  },
-  mendikot: {
-    name: 'Mendikot (Mindi)',
-    desc: 'Collect tens. Trick-taking game.',
-    scores: [
-      { label: 'Per Ten', value: 10 },
-      { label: 'Last Trick', value: 5 },
-      { label: 'No Tens', value: -15 }
-    ]
-  },
-  teendopaanch: {
-    name: 'Teen Do Paanch (3-2-5)',
-    desc: '3 players. Make exact hands.',
-    scores: [
-      { label: 'Extra Hand', value: 10 },
-      { label: 'Short Hand', value: -10 },
-      { label: 'Exact', value: 0 }
-    ]
-  },
-  carrom: {
-    name: 'Carrom',
-    desc: 'Pocket pieces. Queen bonus.',
-    scores: [
-      { label: 'White Piece', value: 1 },
-      { label: 'Black Piece', value: 2 },
-      { label: 'Queen Cover', value: 5 },
-      { label: 'Foul', value: -1 }
-    ]
-  },
-  ludo: {
-    name: 'Ludo',
-    desc: 'Race all tokens home.',
-    scores: [
-      { label: 'Win (1st)', value: 100 },
-      { label: '2nd Place', value: 50 },
-      { label: '3rd Place', value: 20 },
-      { label: 'Last', value: 0 }
-    ]
+/* ==================== SCOREBOARD: PER-GAME STATE ==================== */
+var STORAGE_KEY = "ogt_scoreboards_v1";
+var scoreboards = loadScoreboards();
+var currentGame = "rummy";
+
+function loadScoreboards() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    var parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (e) {
+    return {};
   }
-};
+}
+
+function saveScoreboards() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(scoreboards));
+  } catch (e) {}
+}
+
+function ensureGameBoard(gameKey) {
+  if (!scoreboards[gameKey]) scoreboards[gameKey] = { players: {} };
+  if (!scoreboards[gameKey].players) scoreboards[gameKey].players = {};
+}
+
+function currentPlayers() {
+  ensureGameBoard(currentGame);
+  return scoreboards[currentGame].players;
+}
 
 /* ==================== HELPERS ==================== */
 function vibrate(pattern) {
@@ -226,7 +160,7 @@ function createDiceFace(number) {
   return '<div class="dice-dots dice-face-' + dotsCount + '">' + dots + '</div>';
 }
 
-/* ==================== TAMBOLA NUMBER PICKER ==================== */
+/* ==================== TAMBOLA ==================== */
 function pickTambola() {
   var tambolaNumber = document.getElementById("tambolaNumber");
   var tambolaHistory = document.getElementById("tambolaHistory");
@@ -318,62 +252,72 @@ function makeDecision() {
 /* ==================== GAME SCOREBOARD ==================== */
 function changeGame() {
   var select = document.getElementById("gameSelect");
-  currentGame = select.value;
-  
-  var config = gameConfigs[currentGame];
+  currentGame = select ? select.value : "rummy";
+
+  ensureGameBoard(currentGame);
+  saveScoreboards();
+
   var infoDiv = document.getElementById("gameInfo");
+  var cfg = getGameConfig(currentGame);
   
-  if (infoDiv && config) {
-    infoDiv.innerHTML = "<strong>" + config.name + "</strong> " + config.desc;
+  if (infoDiv && cfg) {
+    infoDiv.innerHTML = "<strong>" + cfg.name + "</strong> " + cfg.desc;
   }
-  
+
   renderPlayers();
-  vibrate(30);
+  vibrate(20);
 }
 
 function addPlayer() {
   var input = document.getElementById("playerName");
-  var name = input.value.trim();
-  
-  if (!name) {
-    vibrate(100);
+  var name = input ? input.value.trim() : "";
+  if (!name) { vibrate(80); return; }
+
+  var p = currentPlayers();
+
+  if (p[name] !== undefined) {
+    vibrate(120);
     return;
   }
 
-  if (players[name] === undefined) {
-    players[name] = 0;
-  } else {
-    vibrate(100);
-    return;
-  }
-  
-  input.value = "";
+  p[name] = 0;
+  if (input) input.value = "";
+  saveScoreboards();
   renderPlayers();
   vibrate(30);
 }
 
 function updateScore(name, delta) {
-  if (players[name] !== undefined) {
-    players[name] = players[name] + delta;
-    renderPlayers();
-    vibrate(20);
-  }
+  var p = currentPlayers();
+  if (p[name] === undefined) return;
+
+  p[name] = Number(p[name] || 0) + Number(delta || 0);
+  saveScoreboards();
+  renderPlayers();
+  vibrate(15);
 }
 
 function removePlayer(name) {
-  delete players[name];
+  var p = currentPlayers();
+  if (p[name] === undefined) return;
+
+  delete p[name];
+  saveScoreboards();
   renderPlayers();
-  vibrate(40);
+  vibrate(30);
 }
 
 function resetGame() {
-  if (Object.keys(players).length === 0) {
-    vibrate(100);
-    return;
-  }
-  
-  if (confirm("Reset all player scores for this game?")) {
-    players = {};
+  ensureGameBoard(currentGame);
+
+  var p = currentPlayers();
+  var hasPlayers = Object.keys(p).length > 0;
+  if (!hasPlayers) { vibrate(80); return; }
+
+  var gameName = getGameName(currentGame);
+  if (confirm("Reset scores for " + gameName + "?")) {
+    scoreboards[currentGame].players = {};
+    saveScoreboards();
     renderPlayers();
     vibrate(50);
   }
@@ -382,96 +326,90 @@ function resetGame() {
 function renderPlayers() {
   var playersDiv = document.getElementById("players");
   if (!playersDiv) return;
-  
+
   playersDiv.innerHTML = "";
 
-  var names = Object.keys(players);
-  
+  var p = currentPlayers();
+  var names = Object.keys(p);
+
   if (names.length === 0) {
     var empty = document.createElement("div");
     empty.style.color = "var(--muted)";
     empty.style.padding = "16px 12px";
     empty.style.textAlign = "center";
     empty.style.fontSize = "0.9rem";
-    empty.textContent = "No players yet. Add players above to start scoring.";
+    empty.textContent = "No players for this game. Add players above.";
     playersDiv.appendChild(empty);
     return;
   }
 
-  var config = gameConfigs[currentGame];
-  if (!config) return;
+  var cfg = getGameConfig(currentGame);
+
+  names.sort(function(a, b) {
+    var sa = Number(p[a] || 0);
+    var sb = Number(p[b] || 0);
+    if (sb !== sa) return sb - sa;
+    return a.localeCompare(b);
+  });
 
   names.forEach(function(name) {
     var row = document.createElement("div");
     row.className = "player-row";
 
     var leftDiv = document.createElement("div");
-    
+
     var nameDiv = document.createElement("div");
     nameDiv.className = "player-name";
     nameDiv.textContent = name;
-    
+
     var scoreDiv = document.createElement("div");
     scoreDiv.className = "player-score";
-    scoreDiv.textContent = players[name];
-    
+    scoreDiv.textContent = p[name];
+
     leftDiv.appendChild(nameDiv);
     leftDiv.appendChild(scoreDiv);
 
     var actionsDiv = document.createElement("div");
     actionsDiv.className = "score-actions";
 
-    config.scores.forEach(function(scoreOption) {
-      var btn = document.createElement("button");
-      btn.className = "small-btn";
-      
-      if (scoreOption.value > 0) {
-        btn.classList.add("positive");
-      } else if (scoreOption.value < 0) {
-        btn.classList.add("negative");
-      }
-      
-      var displayLabel = scoreOption.label;
-      if (scoreOption.value > 0) {
-        displayLabel = "+" + scoreOption.value;
-      } else if (scoreOption.value < 0) {
-        displayLabel = scoreOption.value;
-      } else {
-        displayLabel = scoreOption.label;
-      }
-      
-      btn.textContent = displayLabel;
-      btn.title = scoreOption.label;
-      btn.onclick = (function(n, val) {
-        return function() {
-          updateScore(n, val);
-        };
-      })(name, scoreOption.value);
-      
-      actionsDiv.appendChild(btn);
-    });
+    if (cfg && cfg.scores && cfg.scores.length) {
+      cfg.scores.forEach(function(opt) {
+        var btn = document.createElement("button");
+        btn.className = "small-btn";
 
-    var btnDel = document.createElement("button");
-    btnDel.className = "small-btn";
-    btnDel.textContent = "×";
-    btnDel.title = "Remove player";
-    btnDel.style.fontSize = "1.2rem";
-    btnDel.onclick = (function(n) {
-      return function() {
-        removePlayer(n);
-      };
+        if (opt.value > 0) btn.classList.add("positive");
+        if (opt.value < 0) btn.classList.add("negative");
+
+        var label = (opt.value > 0) ? ("+" + opt.value) : (opt.value < 0 ? String(opt.value) : opt.label);
+        btn.textContent = label;
+        btn.title = opt.desc || opt.label;
+
+        btn.onclick = (function(n, val) {
+          return function() { updateScore(n, val); };
+        })(name, opt.value);
+
+        actionsDiv.appendChild(btn);
+      });
+    }
+
+    var del = document.createElement("button");
+    del.className = "small-btn";
+    del.textContent = "×";
+    del.title = "Remove player";
+    del.style.fontSize = "1.2rem";
+    del.onclick = (function(n) {
+      return function() { removePlayer(n); };
     })(name);
-    
-    actionsDiv.appendChild(btnDel);
+
+    actionsDiv.appendChild(del);
 
     row.appendChild(leftDiv);
     row.appendChild(actionsDiv);
-
     playersDiv.appendChild(row);
   });
 }
 
-/* ==================== INITIALIZATION ==================== */
+/* ==================== INIT ==================== */
 window.addEventListener("DOMContentLoaded", function() {
   setActiveNav("dice");
   
