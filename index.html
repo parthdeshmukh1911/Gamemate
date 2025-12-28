@@ -29,19 +29,15 @@
     <section id="dice" class="section active">
       <div class="card">
         <h2>🎲 Dice Roller</h2>
-
         <label class="field">
           <span>Dice sides</span>
           <input type="number" id="diceSides" value="6" min="2" placeholder="e.g. 6, 20" />
         </label>
-
         <label class="field">
           <span>Number of dice</span>
           <input type="number" id="diceCount" value="1" min="1" max="10" placeholder="default 1" />
         </label>
-
         <button class="action-btn" onclick="rollDice()">🎲 Roll Dice</button>
-
         <div id="diceDisplay" class="dice-display"></div>
         <div id="diceResult" class="result">Press to roll</div>
       </div>
@@ -51,14 +47,11 @@
     <section id="tambola" class="section">
       <div class="card">
         <h2>🔢 Tambola Picker</h2>
-
         <div id="tambolaNumber" class="result big">---</div>
-
         <div class="row">
           <button class="action-btn" onclick="pickTambola()">Pick Number</button>
           <button class="action-btn secondary" onclick="resetTambola()">Reset</button>
         </div>
-
         <div id="tambolaHistory" class="chips"></div>
       </div>
     </section>
@@ -67,14 +60,12 @@
     <section id="coin" class="section">
       <div class="card">
         <h2>🪙 Coin Toss</h2>
-
         <div class="coin-wrap">
           <div id="coin3d" class="coin">
             <div class="coin-face coin-heads">H</div>
             <div class="coin-face coin-tails">T</div>
           </div>
         </div>
-
         <button class="action-btn" onclick="coinToss()">🪙 Flip Coin</button>
         <div id="coinResult" class="result">Press to flip</div>
       </div>
@@ -84,12 +75,10 @@
     <section id="decision" class="section">
       <div class="card">
         <h2>🎯 Decision Maker</h2>
-
         <label class="field">
           <span>Options (comma-separated)</span>
           <textarea id="options" placeholder="Pizza, Burger, Pasta, Dosa"></textarea>
         </label>
-
         <button class="action-btn" onclick="makeDecision()">🎯 Decide For Me</button>
         <div id="decisionResult" class="result">Enter options above</div>
       </div>
@@ -99,33 +88,28 @@
     <section id="score" class="section">
       <div class="card">
         <h2>🃏 Game Scoreboard</h2>
-
         <label class="field">
           <span>Select Game</span>
           <select id="gameSelect" onchange="changeGame()">
-            <option value="rummy">Rummy (Indian Paplu)</option>
-            <option value="teenpatti">Teen Patti (3 Patti)</option>
-            <option value="andarbahar">Andar Bahar</option>
-            <option value="poker">Poker</option>
-            <option value="sattepesatta">Satte Pe Satta</option>
-            <option value="bluff">Bluff (Challenge)</option>
-            <option value="mendikot">Mendikot (Mindi)</option>
-            <option value="teendopaanch">Teen Do Paanch (3-2-5)</option>
-            <option value="carrom">Carrom</option>
-            <option value="ludo">Ludo</option>
+            <option value="rummy">🃏 Rummy (Indian Paplu)</option>
+            <option value="teenpatti">🎴 Teen Patti (3 Patti)</option>
+            <option value="andarbahar">🎲 Andar Bahar</option>
+            <option value="poker">♠️ Poker</option>
+            <option value="sattepesatta">7️⃣ Satte Pe Satta</option>
+            <option value="bluff">🎭 Bluff (Challenge)</option>
+            <option value="mendikot">🔟 Mendikot (Mindi)</option>
+            <option value="teendopaanch">3️⃣2️⃣5️⃣ Teen Do Paanch</option>
+            <option value="carrom">⚫ Carrom</option>
+            <option value="ludo">🎲 Ludo</option>
           </select>
         </label>
-
         <div id="gameInfo" class="game-info"></div>
-
         <div class="row">
           <input id="playerName" type="text" placeholder="Player name" />
           <button class="action-btn" onclick="addPlayer()">Add Player</button>
         </div>
-
         <div id="players" class="players"></div>
-
-        <button class="action-btn secondary" onclick="resetGame()" style="margin-top: 10px;">Reset Game</button>
+        <button class="action-btn secondary" onclick="resetGame()" style="margin-top: 10px;">Reset This Game</button>
       </div>
     </section>
 
@@ -135,6 +119,8 @@
     ⚡ Works Offline • No Login • No Internet Required
   </footer>
 
+  <!-- IMPORTANT: Load games.js BEFORE script.js -->
+  <script src="games.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
