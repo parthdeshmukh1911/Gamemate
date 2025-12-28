@@ -55,77 +55,109 @@ function setActiveNav() {
   });
 }
 
-// 🎲 DICE ROLLER with 3D animation
+
+
+// 🔢 TAMBOLA with number cycling animation
+function pickTambola() {
+  const display = document.querySelector('.number-large') || document.getElementById('tambolaNumber');
+  const history = document.getElementById('tambolaHistory');
+ // 🎲 DICE ROLLER - Fixed and Simplified
 function rollDice() {
-  const dice = document.getElementById('dice3d');
+  const display = document.getElementById('diceDisplay');
   const result = document.getElementById('diceResult');
-  const sides = Number(diceSides.value) || 6;
-  const count = Number(diceCount.value) || 1;
+  const sides = Number(document.getElementById('diceSides').value) || 6;
+  const count = Number(document.getElementById('diceCount').value) || 1;
   
+  // Validation
   if (!sides || sides < 2) {
     showError(result, "⚠️ Enter valid dice sides (min: 2)");
     vibrate(200);
     return;
   }
   
-  if (count < 1 || count > 100) {
-    showError(result, "⚠️ Number of dice: 1-100");
+  if (count < 1 || count > 10) {
+    showError(result, "⚠️ Number of dice: 1-10");
     vibrate(200);
     return;
   }
   
   vibrate(100);
   
-  // Start 3D rolling animation
-  if (dice) dice.classList.add('rolling');
+  // Clear display and show rolling animation
+  display.innerHTML = '';
   result.textContent = '🎲 Rolling...';
   
+  // Create dice elements
+  const diceElements = [];
+  for (let i = 0; i < count; i++) {
+    const dice = document.createElement('div');
+    dice.className = 'simple-dice rolling';
+    
+    if (sides === 6) {
+      // Show dots for standard dice
+      dice.innerHTML = '<div class="dice-dots"></div>';
+    } else {
+      // Show number for non-standard dice
+      dice.innerHTML = '<div class="dice-number">?</div>';
+    }
+    
+    display.appendChild(dice);
+    diceElements.push(dice);
+  }
+  
+  // Roll after animation
   setTimeout(() => {
-    let results = [];
+    const results = [];
+    
     for (let i = 0; i < count; i++) {
-      results.push(Math.floor(Math.random() * sides) + 1);
+      const roll = Math.floor(Math.random() * sides) + 1;
+      results.push(roll);
+      
+      const dice = diceElements[i];
+      dice.classList.remove('rolling');
+      
+      if (sides === 6) {
+        // Show dots for 6-sided dice
+        dice.innerHTML = createDiceFace(roll);
+      } else {
+        // Show number for other dice
+        dice.innerHTML = `<div class="dice-number">${roll}</div>`;
+      }
     }
     
+    // Display result
     const total = results.reduce((a, b) => a + b, 0);
-    const resultText = count > 1 
-      ? `🎲 ${results.join(' + ')} = ${total}`
-      : `🎲 You rolled: ${results[0]}`;
+    let resultText;
     
-    result.innerHTML = `<strong>${resultText}</strong>`;
-    animateResult(result);
-    
-    // Set 3D dice face (for 6-sided dice)
-    if (sides === 6 && dice) {
-      setDiceRotation(results[0]);
+    if (count === 1) {
+      resultText = `<strong>Result: ${results[0]}</strong>`;
+    } else if (count <= 5) {
+      resultText = `<strong>${results.join(' + ')} = ${total}</strong>`;
+    } else {
+      resultText = `<strong>Total: ${total}</strong> (${results.join(', ')})`;
     }
     
-    if (dice) dice.classList.remove('rolling');
+    result.innerHTML = resultText;
+    animateResult(result);
     vibrate([50, 100, 50]);
-  }, 800);
+  }, 600);
 }
 
-// Set dice face rotation for 6-sided dice
-function setDiceRotation(number) {
-  const dice = document.getElementById('dice3d');
-  if (!dice) return;
-  
-  const rotations = {
-    1: 'rotateX(0deg) rotateY(0deg)',
-    2: 'rotateX(0deg) rotateY(180deg)',
-    3: 'rotateX(0deg) rotateY(90deg)',
-    4: 'rotateX(0deg) rotateY(-90deg)',
-    5: 'rotateX(90deg) rotateY(0deg)',
-    6: 'rotateX(-90deg) rotateY(0deg)'
+// Create dice face with dots (for 6-sided dice)
+function createDiceFace(number) {
+  const dotCounts = {
+    1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6
   };
   
-  dice.style.transform = rotations[number] || rotations[1];
-}
-
-// 🔢 TAMBOLA with number cycling animation
-function pickTambola() {
-  const display = document.querySelector('.number-large') || document.getElementById('tambolaNumber');
-  const history = document.getElementById('tambolaHistory');
+  const count = dotCounts[number] || 1;
+  let dots = '';
   
+  for (let i = 0; i < count; i++) {
+    dots += '<div class="dot"></div>';
+  }
+  
+  return `<div class="dice-dots dice-face-${number}">${dots}</div>`;
+} 
   if (tambolaNumbers.length === 0) {
     display.innerHTML = '<span style="font-size:2rem">🎉 Game Complete!</span>';
     vibrate([100, 50, 100, 50, 100]);
