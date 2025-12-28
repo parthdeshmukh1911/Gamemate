@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Offline Game Toolkit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <h1>🎮 Offline Game Toolkit</h1>
+  <p>Dice • Tambola • Card Scores • Coin Toss • Decision Maker</p>
+</header>
+
+<nav>
+  <button onclick="showSection('dice')">🎲 Dice</button>
+  <button onclick="showSection('tambola')">🔢 Tambola</button>
+  <button onclick="showSection('card')">🃏 Card Scores</button>
+  <button onclick="showSection('coin')">🪙 Head/Tails</button>
+  <button onclick="showSection('decision')">🎯 Decision</button>
+</nav>
+
+<main>
+
+<!-- Dice -->
+<section id="dice" class="section active">
+  <h2>Dice Roller</h2>
+  <input type="number" id="diceSides" placeholder="Sides (e.g. 6, 20)" />
+  <input type="number" id="diceCount" placeholder="How many dice" />
+  <button onclick="rollDice()">Roll</button>
+  <p id="diceResult"></p>
+</section>
+
+<!-- Tambola -->
+<section id="tambola" class="section">
+  <h2>Tambola Number Picker</h2>
+  <button onclick="pickTambola()">Pick Number</button>
+  <button onclick="resetTambola()">Reset</button>
+  <h3 id="tambolaNumber">---</h3>
+  <div id="tambolaHistory"></div>
+</section>
+
+<!-- Card Score -->
+<section id="card" class="section">
+  <h2>Card Game Scorer</h2>
+  <input id="playerName" placeholder="Player name" />
+  <button onclick="addPlayer()">Add Player</button>
+  <div id="players"></div>
+</section>
+
+<!-- Coin -->
+<section id="coin" class="section">
+  <h2>Head or Tails</h2>
+  <button onclick="coinToss()">Toss Coin</button>
+  <h3 id="coinResult">---</h3>
+</section>
+
+<!-- Decision -->
+<section id="decision" class="section">
+  <h2>Decision Maker</h2>
+  <textarea id="options" placeholder="Enter options separated by comma"></textarea>
+  <button onclick="makeDecision()">Decide</button>
+  <h3 id="decisionResult">---</h3>
+</section>
+
+</main>
+
+<footer>
+  <p>Works offline • No internet needed</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
